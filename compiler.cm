@@ -1,5 +1,5 @@
 Group is
-        test.sml
+        main.sml
 
         $/basis.cm
         $/smlnj-lib.cm
