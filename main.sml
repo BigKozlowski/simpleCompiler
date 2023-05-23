@@ -21,19 +21,19 @@ val prog: stm =
                                     OpExp(NumExp 10, Times, IdExp "a"))),   
                           PrintStm[IdExp "b"]))
 
-signature ASSIGNMENTS =
+signature INTERPRETER =
   sig
     val interpEach: token list -> table -> table
     val interpStm: table * stm -> table
     val interpExp: table * exp -> table * int
     val lookup: table * id -> int
-    val update: table * id * int -> table
+    val update: id * (table * int) -> table
     val interp: stm -> unit
   end
 
   
 
-structure Assignments :> ASSIGNMENTS =
+structure Interpreter :> INTERPRETER =
   struct
     fun lookup (t, i) =
       case t of
@@ -46,7 +46,7 @@ structure Assignments :> ASSIGNMENTS =
               | false => lookup (xs, i)
           end
     
-    fun update (t, i, v) =
+    fun update (i, (t, v)) =
       let 
         fun updateInner (t, i, v) res =
           case t of
@@ -69,7 +69,7 @@ structure Assignments :> ASSIGNMENTS =
               let
                 val (t1, vv) = interpExp(t, e)
                 val _ = print (Int.toString vv)
-                val _ = print "\n"
+                val _ = print " "
               in
                 t1
               end
@@ -85,24 +85,15 @@ structure Assignments :> ASSIGNMENTS =
       | interpEach [] t = t
     and interpStm (t, s) =
       case s of
-        AssignStm (id, exp) =>
+        AssignStm (id, exp) => update (id, interpExp(t, exp))
+        | PrintStm xs => 
           let
-            val (t1, v) = interpExp(t, exp)
-          in 
-            update (t1, id, v)
-          end
-        | PrintStm xs =>
-          let
-            val t1 = interpEach (map (fn x => Exp x) xs) t
+            val res = interpEach (map (fn x => Exp x) xs) t
+            val _ = print "\n"
           in
-            t1
+            res
           end
-        | CompoundStm (l, r) => 
-          let
-            val t1 = interpStm(t, l)
-          in 
-            interpStm(t1, r)
-          end
+        | CompoundStm (l, r) => interpStm(interpStm(t, l), r)
     and interpExp (t, e) =
       case e of
         IdExp id => (t, lookup(t, id))
@@ -136,7 +127,7 @@ structure Assignments :> ASSIGNMENTS =
 
 fun out () =
   let
-    val newT = Assignments.interp prog
+    val newT = Interpreter.interp prog
   in 
     1
   end
