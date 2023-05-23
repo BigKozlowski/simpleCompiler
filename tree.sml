@@ -23,12 +23,17 @@ struct
             empty
         end
 
-    fun lookup (LEAF, key) = LEAF
-    | lookup (tree, key) = 
-        let
-            val _ = print "LOOKUP NOT IMPLEMENTED\n"
+    fun lookup (LEAF, _) = LEAF
+    | lookup (tree, k) = 
+        let 
+            val TREE (l, b, r) = tree
+            val (_, key, value) = b
         in
-            LEAF
+            if k = key
+                then tree
+            else if k < key
+                then lookup(l, k)
+            else lookup(r, k)
         end
 
     fun insertList [] tree = tree
