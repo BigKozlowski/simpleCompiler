@@ -9,18 +9,50 @@ sig
   val lookup: 'a tree * key -> 'a tree
   val insertList: (key * 'a) list -> 'a tree -> 'a tree
   val balance: 'a tree -> 'a tree
+  val rotateLeft: 'a tree -> 'a tree
+  val rotateRight: 'a tree -> 'a tree
 end
 
 structure Tree :> TREE =
 struct
     val empty = LEAF
 
-    fun insert (LEAF, key, v) = TREE (LEAF, (R, key, v), LEAF)
-    | insert (tree, key, v) = 
+    fun rotateLeft LEAF = LEAF
+    | rotateLeft tree =
         let
-            val _ = print "INSERT NOT IMPLEMENTED\n"
+            val _ = print "ROTATELEFT NOT IMPLEMENTED\n"
         in
-            empty
+            tree
+        end
+    
+    fun rotateRight LEAF = LEAF
+    | rotateRight tree = 
+        let
+            val _ = print "ROTATERIGHT NOT IMPLEMENTED\n"
+        in
+            tree
+        end
+
+    fun balance LEAF = LEAF
+    | balance tree = 
+        let
+            val _ = print "BALANCE NOT IMPLEMENTED\n"
+        in
+            tree
+        end
+    
+    fun insert (LEAF, key, v) = TREE (LEAF, (R, key, v), LEAF)
+    | insert (tree, k, v) = 
+        let
+            val TREE (l, (color, key, value), r) = tree
+            val newTree = if k = key
+                            then TREE (l, (color, key, v), r)
+                        else if k < key
+                            then TREE (insert(l, k, v), (color, key, value), r)
+                        else TREE (l, (color, key, value), insert(r, k, v))
+            val res = balance newTree
+        in
+            res
         end
 
     fun lookup (LEAF, _) = LEAF
@@ -38,13 +70,5 @@ struct
 
     fun insertList [] tree = tree
     | insertList ((key, v)::xs) tree = insertList xs (insert(tree, key, v)) 
-    
-    fun balance LEAF = LEAF
-    | balance tree = 
-        let
-            val _ = print "BALANCE NOT IMPLEMENTED\n"
-        in
-            empty
-        end
-    
+
 end
