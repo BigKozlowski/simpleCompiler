@@ -34,7 +34,8 @@ struct
     fun insertList [] tree = tree
     | insertList ((key, v)::xs) tree = insertList xs (insert(tree, key, v)) 
     
-    fun balance tree = 
+    fun balance LEAF = LEAF
+    | balance tree = 
         let
             val _ = print "BALANCE NOT IMPLEMENTED\n"
         in
