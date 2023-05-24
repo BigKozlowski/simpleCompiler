@@ -13,10 +13,7 @@ fun eof() = let val pos = hd(!linePos) in Tokens.EOF(pos,pos) end
 
 %s COMMENT;
 
-(* =<><<=>>=&! : = *)
-
 %%
-"123"	                    => (Tokens.INT(123,yypos,yypos+3));
 <INITIAL>\n                 => (lineNum := !lineNum+1; linePos := yypos :: !linePos; continue());
 <INITIAL>.                  => (ErrorMsg.error yypos ("illegal character " ^ yytext); continue());
 
@@ -35,6 +32,16 @@ fun eof() = let val pos = hd(!linePos) in Tokens.EOF(pos,pos) end
 <INITIAL>"-"                => (Tokens.MINUS(yypos, yypos-1));
 <INITIAL>"*"                => (Tokens.TIMES(yypos, yypos+1));
 <INITIAL>"/"                => (Tokens.DIVIDE(yypos, yypos+1));
+<INITIAL>"="                => (Tokens.EQ(yypos, yypos+1));
+<INITIAL>"<>"               => (Tokens.NEQ(yypos, yypos+2));
+<INITIAL>"<"                => (Tokens.LT(yypos, yypos+1));
+<INITIAL>"<="               => (Tokens.LE(yypos, yypos+2));
+<INITIAL>">"                => (Tokens.GT(yypos, yypos+1));
+<INITIAL>">="               => (Tokens.GE(yypos, yypos+2));
+<INITIAL>"&"                => (Tokens.AND(yypos, yypos+1));
+<INITIAL>"|"                => (Tokens.OR(yypos, yypos+1));
+<INITIAL>":="               => (Tokens.ASSIGN(yypos, yypos+2));
+
 
 <INITIAL>var                => (Tokens.VAR(yypos, yypos + (size yytext)));
 <INITIAL>"/*"               => (commentDepth := !commentDepth + 1; YYBEGIN COMMENT; continue());
