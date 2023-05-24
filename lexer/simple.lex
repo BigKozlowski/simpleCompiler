@@ -4,7 +4,10 @@ type lexresult = Tokens.token
 val lineNum = ErrorMsg.lineNum
 val linePos = ErrorMsg.linePos
 
-val commentDepth = ref 0;
+val commentDepth = ref 0
+val str = ref ""
+val strStart = ref 0
+val stringClosed = ref true;
 fun err(p1,p2) = ErrorMsg.error p1
 
 fun eof() = 
@@ -16,10 +19,11 @@ fun eof() =
         else (Tokens.EOF(pos, pos))
     end
 
-
 %% 
 
-%s COMMENT;
+%s STRING COMMENT;
+(* escapes = \\([nt\\"]|\^[@A-Z\[\\\]\^_]|[0-9]{3}|[\ \n\t\f]+\\); *)
+printables = [\t\f]|[\ !#-\[]|[\]-~];
 
 %%
 <INITIAL>\n                 => (lineNum := !lineNum+1; linePos := yypos :: !linePos; continue());
@@ -67,6 +71,14 @@ fun eof() =
 <INITIAL>then               => (Tokens.THEN(yypos, yypos + (size yytext)));
 <INITIAL>if                 => (Tokens.IF(yypos, yypos + (size yytext)));
 <INITIAL>array              => (Tokens.ARRAY(yypos, yypos + (size yytext)));
+
+<INITIAL>[a-zA-Z][a-zA-Z0-9_]* => (Tokens.ID(yytext, yypos, yypos + (size yytext)));
+<INITIAL>[0-9]+             => (Tokens.INT (Option.valOf (Int.fromString yytext), yypos, yypos+(size yytext)));
+
+<INITIAL>"\""               => (YYBEGIN STRING; str := ""; strStart := yypos; stringClosed := false; continue());
+<STRING>"\""                => (YYBEGIN INITIAL; stringClosed := true; Tokens.STRING(!str, !strStart, yypos-1));
+<STRING>.                   => (str := !str ^ yytext; continue());
+<STRING>({printables}|\\n|\\t) => (str := !str ^ valOf(String.fromString yytext); continue());
 
 <INITIAL>"/*"               => (commentDepth := !commentDepth + 1; YYBEGIN COMMENT; continue());
 <COMMENT>"*/"               => (commentDepth := !commentDepth - 1; if !commentDepth = 0 then (YYBEGIN INITIAL; continue()) else continue());
