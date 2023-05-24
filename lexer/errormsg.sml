@@ -4,7 +4,6 @@ sig
     val fileName : string ref
     val lineNum : int ref
     val linePos : int list ref
-    val commentDepth : int ref
     val sourceStream : TextIO.instream ref
     val error : int -> string -> unit
     exception Error
@@ -19,7 +18,6 @@ struct
   val fileName = ref ""
   val lineNum = ref 1
   val linePos = ref [1]
-  val commentDepth = ref 0
   val sourceStream = ref TextIO.stdIn
 
   fun reset() = (anyErrors:=false;
