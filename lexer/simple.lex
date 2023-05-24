@@ -7,7 +7,15 @@ val linePos = ErrorMsg.linePos
 val commentDepth = ref 0;
 fun err(p1,p2) = ErrorMsg.error p1
 
-fun eof() = let val pos = hd(!linePos) in Tokens.EOF(pos,pos) end
+fun eof() = 
+    let
+        val pos = hd(!linePos)
+    in
+        if !commentDepth > 0
+            then (ErrorMsg.error pos ("Unclosed comment"); commentDepth := 0; Tokens.EOF(pos, pos))
+        else (Tokens.EOF(pos, pos))
+    end
+
 
 %% 
 
@@ -42,8 +50,24 @@ fun eof() = let val pos = hd(!linePos) in Tokens.EOF(pos,pos) end
 <INITIAL>"|"                => (Tokens.OR(yypos, yypos+1));
 <INITIAL>":="               => (Tokens.ASSIGN(yypos, yypos+2));
 
-
+<INITIAL>"type"             => (Tokens.TYPE(yypos, yypos + (size yytext)));
 <INITIAL>var                => (Tokens.VAR(yypos, yypos + (size yytext)));
+<INITIAL>function           => (Tokens.FUNCTION(yypos, yypos + (size yytext)));
+<INITIAL>break              => (Tokens.BREAK(yypos, yypos + (size yytext)));
+<INITIAL>of                 => (Tokens.OF(yypos, yypos + (size yytext)));
+<INITIAL>end                => (Tokens.END(yypos, yypos + (size yytext)));
+<INITIAL>in                 => (Tokens.IN(yypos, yypos + (size yytext)));
+<INITIAL>nil                => (Tokens.NIL(yypos, yypos + (size yytext)));
+<INITIAL>"let"              => (Tokens.LET(yypos, yypos + (size yytext)));
+<INITIAL>do                 => (Tokens.DO(yypos, yypos + (size yytext)));
+<INITIAL>to                 => (Tokens.TO(yypos, yypos + (size yytext)));
+<INITIAL>for                => (Tokens.FOR(yypos, yypos + (size yytext)));
+<INITIAL>while              => (Tokens.WHILE(yypos, yypos + (size yytext)));
+<INITIAL>else               => (Tokens.ELSE(yypos, yypos + (size yytext)));
+<INITIAL>then               => (Tokens.THEN(yypos, yypos + (size yytext)));
+<INITIAL>if                 => (Tokens.IF(yypos, yypos + (size yytext)));
+<INITIAL>array              => (Tokens.ARRAY(yypos, yypos + (size yytext)));
+
 <INITIAL>"/*"               => (commentDepth := !commentDepth + 1; YYBEGIN COMMENT; continue());
 <COMMENT>"*/"               => (commentDepth := !commentDepth - 1; if !commentDepth = 0 then (YYBEGIN INITIAL; continue()) else continue());
 <COMMENT>"/*"               => (commentDepth := !commentDepth + 1; continue());
