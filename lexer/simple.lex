@@ -16,7 +16,16 @@ fun eof() =
     in
         if !commentDepth > 0
             then (ErrorMsg.error pos ("Unclosed comment"); commentDepth := 0; Tokens.EOF(pos, pos))
-        else (Tokens.EOF(pos, pos))
+        else 
+            let
+                val res = (Tokens.EOF(pos, pos));
+                val _ = lineNum := 0
+                val _ = linePos := [];
+                val _ = strStart := 0;
+                val _ = stringClosed := true;
+            in
+                res
+            end
     end
 
 %% 
@@ -26,10 +35,9 @@ fun eof() =
 printables = [\t\f]|[\ !#-\[]|[\]-~];
 
 %%
-<INITIAL>\n                 => (lineNum := !lineNum+1; linePos := yypos :: !linePos; continue());
-<INITIAL>.                  => (ErrorMsg.error yypos ("illegal character " ^ yytext); continue());
+<INITIAL,COMMENT>\n         => (lineNum := !lineNum+1; linePos := yypos :: !linePos; continue());
 
-<INITIAL>(" "|"\n"|"\t")    => (continue());
+<INITIAL>(" "|"\t")         => (continue());
 <INITIAL>","                => (Tokens.COMMA(yypos, yypos+1));
 <INITIAL>":"                => (Tokens.COLON(yypos, yypos+1));
 <INITIAL>";"                => (Tokens.SEMICOLON(yypos, yypos+1));
@@ -76,11 +84,12 @@ printables = [\t\f]|[\ !#-\[]|[\]-~];
 <INITIAL>[0-9]+             => (Tokens.INT (Option.valOf (Int.fromString yytext), yypos, yypos+(size yytext)));
 
 <INITIAL>"\""               => (YYBEGIN STRING; str := ""; strStart := yypos; stringClosed := false; continue());
+<STRING>({printables}|\\n|\\t|"\\\"") => (str := !str ^ valOf(String.fromString yytext); continue());
 <STRING>"\""                => (YYBEGIN INITIAL; stringClosed := true; Tokens.STRING(!str, !strStart, yypos-1));
 <STRING>.                   => (str := !str ^ yytext; continue());
-<STRING>({printables}|\\n|\\t) => (str := !str ^ valOf(String.fromString yytext); continue());
 
 <INITIAL>"/*"               => (commentDepth := !commentDepth + 1; YYBEGIN COMMENT; continue());
 <COMMENT>"*/"               => (commentDepth := !commentDepth - 1; if !commentDepth = 0 then (YYBEGIN INITIAL; continue()) else continue());
 <COMMENT>"/*"               => (commentDepth := !commentDepth + 1; continue());
 <COMMENT>.                  => (continue());
+.                           => (ErrorMsg.error yypos ("illegal character " ^ yytext); continue());

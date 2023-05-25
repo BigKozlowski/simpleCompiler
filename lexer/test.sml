@@ -19,9 +19,9 @@
 
 structure Test =
 struct
-  fun main (name, args) =
+  fun main (name, (a1::_)) =
     let
-        val _ = print "TEST\n"
+        val _ = Parse.parse "test.tig"
     in
         1
     end
