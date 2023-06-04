@@ -1,0 +1,9 @@
+Group is
+    ../lexer/driver.sml
+    ../lexer/errormsg.sml
+    ../lexer/tokens.sig
+    ../lexer/tokens.sml
+    ../lexer/simple.lex
+    main.sml
+    $/basis.cm
+    $/smlnj-lib.cm
