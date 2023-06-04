@@ -1,4 +1,6 @@
 let
+		/* It's a comment 
+Multiline comment */
 	function fac(n : int) : int =
 		if n <= 1 then
 			1
