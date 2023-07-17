@@ -1,0 +1,11 @@
+local
+    $(SML_LIB)/basis/basis.mlb
+    ../lexer/driver.sml
+    ../lexer/errormsg.sml
+    ../lexer/tokens.sig
+    ../lexer/tokens.sml
+    ../lexer/simple.lex.sml
+    main.sml
+in
+    structure Test
+end

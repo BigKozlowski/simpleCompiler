@@ -21,7 +21,7 @@ structure Test =
 struct
   fun main (name, (a1::_)) =
     let
-        val tokens = Parse.parse "test.tig"
+        val tokens = Parse.parse "program.simple"
     in
         1
     end
